@@ -20,6 +20,8 @@ namespace Microsoft.DotNet.UpgradeAssistant.Extensions.Default.Analyzers
 
         public WellKnownTypes Types { get; init; } = new();
 
+        public ImmutableArray<AdapterDefinition> Definitions { get; init; } = ImmutableArray.Create<AdapterDefinition>();
+
         public bool IsFactoryMethod(IMethodSymbol method)
         {
             foreach (var factory in Factories)
@@ -94,7 +96,7 @@ namespace Microsoft.DotNet.UpgradeAssistant.Extensions.Default.Analyzers
             return false;
         }
 
-        public bool IsAvailable => Descriptors.Length > 0;
+        public bool IsAvailable => Descriptors.Length > 0 || Definitions.Length > 0;
 
         public static AdapterContext Create() => new();
 
@@ -158,6 +160,13 @@ namespace Microsoft.DotNet.UpgradeAssistant.Extensions.Default.Analyzers
                         IgnoredAssemblies = context.IgnoredAssemblies.Add(assembly)
                     };
                 }
+                else if (TryParseDefinition(context.Types, a, out var definition))
+                {
+                    context = context with
+                    {
+                        Definitions = context.Definitions.Add(definition)
+                    };
+                }
             }
 
             return context;
@@ -209,6 +218,23 @@ namespace Microsoft.DotNet.UpgradeAssistant.Extensions.Default.Analyzers
             }
 
             descriptor = default;
+            return false;
+        }
+
+        private static bool TryParseDefinition(WellKnownTypes types, AttributeData a, [MaybeNullWhen(false)] out AdapterDefinition definition)
+        {
+            if (SymbolEqualityComparer.Default.Equals(types.AdapterDescriptor, a.AttributeClass))
+            {
+                if (a.ConstructorArguments.Length == 1 &&
+                    a.ConstructorArguments[0].Kind == TypedConstantKind.Type &&
+                    a.ConstructorArguments[0].Value is ITypeSymbol typeToreplace)
+                {
+                    definition = new AdapterDefinition(typeToreplace);
+                    return true;
+                }
+            }
+
+            definition = default;
             return false;
         }
     }

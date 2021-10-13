@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Immutable;
+using System.Linq;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Diagnostics;
 using Microsoft.CodeAnalysis.Operations;
@@ -17,6 +18,7 @@ namespace Microsoft.DotNet.UpgradeAssistant.Extensions.Default.Analyzers
         public const string RefactorDiagnosticId = "UA0014";
         public const string AddMemberDiagnosticId = "UA0014b";
         public const string CallFactoryDiagnosticId = "UA0014c";
+        public const string DefinitionDiagnosticId = "UA0014i";
 
         private const string Category = "Refactor";
 
@@ -32,16 +34,23 @@ namespace Microsoft.DotNet.UpgradeAssistant.Extensions.Default.Analyzers
         private static readonly LocalizableString CallFactoryMessageFormat = new LocalizableResourceString(nameof(Resources.AdapterCallFactoryMessageFormat), Resources.ResourceManager, typeof(Resources));
         private static readonly LocalizableString CallFactoryDescription = new LocalizableResourceString(nameof(Resources.AdapterCallFactoryDescription), Resources.ResourceManager, typeof(Resources));
 
+        private static readonly LocalizableString DefinitionTitle = new LocalizableResourceString(nameof(Resources.AdapterDefinitionTitle), Resources.ResourceManager, typeof(Resources));
+        private static readonly LocalizableString DefinitionMessageFormat = new LocalizableResourceString(nameof(Resources.AdapterDefinitionMessageFormat), Resources.ResourceManager, typeof(Resources));
+        private static readonly LocalizableString DefinitionDescription = new LocalizableResourceString(nameof(Resources.AdapterDefinitionDescription), Resources.ResourceManager, typeof(Resources));
+
         private static readonly DiagnosticDescriptor RefactorRule = new(RefactorDiagnosticId, RefactorTitle, RefactorMessageFormat, Category, DiagnosticSeverity.Warning, isEnabledByDefault: true, description: RefactorDescription);
         private static readonly DiagnosticDescriptor AddMemberRule = new(AddMemberDiagnosticId, AddMemberTitle, AddMemberMessageFormat, Category, DiagnosticSeverity.Warning, isEnabledByDefault: true, description: AddMemberDescription);
         private static readonly DiagnosticDescriptor CallFactoryRule = new(CallFactoryDiagnosticId, CallFactoryTitle, CallFactoryMessageFormat, Category, DiagnosticSeverity.Warning, isEnabledByDefault: true, description: CallFactoryDescription);
+        private static readonly DiagnosticDescriptor DefinitionRule = new(DefinitionDiagnosticId, DefinitionTitle, DefinitionMessageFormat, Category, DiagnosticSeverity.Warning, isEnabledByDefault: true, description: DefinitionDescription);
 
-        public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics { get; } = ImmutableArray.Create(RefactorRule, AddMemberRule, CallFactoryRule);
+        public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics { get; } = ImmutableArray.Create(RefactorRule, AddMemberRule, CallFactoryRule, DefinitionRule);
 
         public override void Initialize(AnalysisContext context)
         {
             context.EnableConcurrentExecution();
             context.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.Analyze | GeneratedCodeAnalysisFlags.ReportDiagnostics);
+
+            RegisterDefinitionActions(context);
 
             context.RegisterCompilationStartAction(context =>
             {
@@ -201,6 +210,25 @@ namespace Microsoft.DotNet.UpgradeAssistant.Extensions.Default.Analyzers
                     }
                 }
             }, OperationKind.Invalid);
+        }
+
+        private static void RegisterDefinitionActions(AnalysisContext context)
+        {
+            context.RegisterOperationAction(context =>
+            {
+                if (context.Operation.Syntax is CodeAnalysis.CSharp.Syntax.AttributeSyntax)
+                {
+                   if (context.Operation.Children.Count() == 1 &&
+                    context.Operation.Children.First() is ITypeOfOperation typeOf &&
+                    typeOf.TypeOperand is ITypeSymbol typeToReplace)
+                   {
+                       var definition = new AdapterDefinition(typeToReplace);
+                       context.ReportDiagnostic(
+                           Diagnostic.Create(DefinitionRule, context.Operation.Syntax.GetLocation(), properties: definition.Properties, definition.TypeToReplace)
+                       );
+                   }
+                }
+            }, OperationKind.None);
         }
 
         private static void GeneralizedSyntaxNodeAction(
