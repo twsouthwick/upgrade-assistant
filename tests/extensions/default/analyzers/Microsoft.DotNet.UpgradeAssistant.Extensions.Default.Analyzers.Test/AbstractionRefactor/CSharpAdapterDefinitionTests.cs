@@ -16,11 +16,6 @@ namespace Microsoft.DotNet.UpgradeAssistant.Extensions.Default.Analyzers.Test.Ab
         [Fact]
         public async Task CanGenerateInterfaceStub()
         {
-            while (!System.Diagnostics.Debugger.IsAttached)
-            {
-                System.Console.WriteLine($"Waiting to attach on ${System.Diagnostics.Process.GetCurrentProcess().Id}");
-                System.Threading.Thread.Sleep(1000);
-            }
             var testFile = @"
 [assembly: {|#0:Microsoft.CodeAnalysis.Refactoring.AdapterDescriptor(typeof(RefactorTest.SomeClass))|}]
 
@@ -41,7 +36,7 @@ namespace RefactorTest
 }";
 
             const string withFix = @"
-[assembly: Microsoft.CodeAnalysis.Refactoring.AdapterDescriptor(typeof(RefactorTest.ISomeClass), typeof(global::RefactorTest.SomeClass))]
+[assembly: Microsoft.CodeAnalysis.Refactoring.AdapterDescriptor(typeof(RefactorTest.ISomeClass), typeof(RefactorTest.SomeClass))]
 
 namespace RefactorTest
 {
@@ -56,6 +51,13 @@ namespace RefactorTest
     public class SomeClass
     {
        public bool IsValid() => true;
+    }
+}
+
+namespace RefactorTest
+{
+    public interface ISomeClass
+    {
     }
 }";
 
@@ -72,9 +74,9 @@ namespace RefactorTest
             var test = CreateTest(VerifyCS.Create(), null)
                 .WithSource(testFile)
                 .WithExpectedDiagnostics(diagnostic)
-                .WithFixed(withFix);
-                // .WithFixed(interfaceDefinition, "ISomeClass.cs")
-                // .WithExpectedDiagnosticsAfter(refactorDiagnostic, addMemberDiagnostic);
+                .WithFixed(withFix)
+                //.WithFixed(interfaceDefinition, "ISomeClass.cs")
+                .WithExpectedDiagnosticsAfter(refactorDiagnostic, addMemberDiagnostic);
             await test.RunAsync();
         }
     }

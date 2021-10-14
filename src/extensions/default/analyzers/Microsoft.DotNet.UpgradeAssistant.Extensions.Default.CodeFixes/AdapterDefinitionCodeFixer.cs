@@ -35,47 +35,55 @@ namespace Microsoft.DotNet.UpgradeAssistant.Extensions.Default.CodeFixes
                 return;
             }
 
-            if (semantic.Compilation.GetTypeByMetadataName("RefactorTest.ISomeClass") is not null)
+            var root = await context.Document.GetSyntaxRootAsync(context.CancellationToken).ConfigureAwait(false);
+
+            if (root is null)
             {
                 return;
             }
 
+            var node = root.FindNode(diagnostic.Location.SourceSpan);
+
+            if (node is null)
+            {
+                return;
+            }
+
+            var adapterContext = AdapterContext.Create().FromCompilation(semantic.Compilation);
+
             if (diagnostic.Properties.TryGetTypeToReplace(semantic, out var typeToReplace))
-            {   
+            {
                 context.RegisterCodeFix(
                     CodeAction.Create(
                         "foo",
                         createChangedSolution: async cancellationToken =>
                         {
-                            if (semantic.Compilation.GetTypeByMetadataName("RefactorTest.ISomeClass") is not null)
-                            {
-                                return context.Document.Project.Solution;
-                            }
-
-                            // Todo: Replace SyntaxFactory with SyntaxGenerator for more language support
-                            var slnEditor = new SolutionEditor(context.Document.Project.Solution);
-                            var editor = await slnEditor.GetDocumentEditorAsync(context.Document.Id, cancellationToken);
-                            var root = await context.Document.GetSyntaxRootAsync(cancellationToken).ConfigureAwait(false);
+                            // Update attribute
+                            var editor = await DocumentEditor.CreateAsync(context.Document, cancellationToken).ConfigureAwait(false);
                             var interfaceName = $"I{typeToReplace.Name}";
 
-                            // Add the interface declaration to the abstractions project
+                            var newArg = editor.Generator.AttributeArgument(
+                                editor.Generator.TypeOfExpression(
+                                    editor.Generator.QualifiedName(
+                                        editor.Generator.NameExpression(typeToReplace.ContainingNamespace),
+                                        editor.Generator.IdentifierName(interfaceName))));
+
+                            var newNode = editor.Generator.InsertAttributeArguments(node, 0, new[] { newArg });
+                            editor.ReplaceNode(node, newNode);
+
                             var interfaceDeclaration = editor.Generator.InterfaceDeclaration(interfaceName, accessibility: Accessibility.Public);
                             var namespaceDeclaration = editor.Generator.NamespaceDeclaration(
                                 editor.Generator.NameExpression(typeToReplace.ContainingNamespace),
-                                interfaceDeclaration
-                            ).NormalizeWhitespace(eol: System.Environment.NewLine);
+                                interfaceDeclaration);
+                            editor.AddMember(root, namespaceDeclaration);
 
-                            // Update the definition attribute with the descriptor attribute
-                            var definitionAttribute = root.FindNode(diagnostic.Location.SourceSpan);
-                            var descriptorAttribute = SyntaxFactory.Attribute(
-                                SyntaxFactory.ParseName("Microsoft.CodeAnalysis.AdapterDescriptor"),
-                                SyntaxFactory.AttributeArgumentList().AddArguments(
-                                    SyntaxFactory.AttributeArgument(SyntaxFactory.TypeOfExpression(SyntaxFactory.ParseTypeName("RefactorTest.ISomeClass"))),
-                                    SyntaxFactory.AttributeArgument(SyntaxFactory.TypeOfExpression(SyntaxFactory.ParseTypeName(typeToReplace.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat))))
-                            ));
-                            editor.ReplaceNode(definitionAttribute, descriptorAttribute);
+                            return editor.GetChangedDocument().Project.Solution;
 
-                            return slnEditor.GetChangedSolution();
+                            // Add the interface declaration to the abstractions project
+
+                            //var addedDocument = project.AddDocument("{interfaceName}.cs", editor.Generator.CompilationUnit(namespaceDeclaration));
+
+                            //return addedDocument.Project.Solution;
                         },
                         nameof(AdapterDefinitionCodeFixer)),
                     diagnostic);

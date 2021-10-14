@@ -31,4 +31,12 @@ namespace Microsoft.CodeAnalysis.Refactoring
         {
         }
     }
+
+    [AttributeUsage(AttributeTargets.Assembly, AllowMultiple = true)]
+    internal sealed class AdapterStaticDescriptorAttribute : Attribute
+    {
+        public AdapterStaticDescriptorAttribute(Type originalType, string originalMember, Type newType, string newMember)
+        {
+        }
+    }
 }
