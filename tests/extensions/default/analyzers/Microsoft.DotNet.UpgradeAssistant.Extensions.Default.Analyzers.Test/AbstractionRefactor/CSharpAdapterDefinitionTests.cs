@@ -52,13 +52,6 @@ namespace RefactorTest
     {
        public bool IsValid() => true;
     }
-}
-
-namespace RefactorTest
-{
-    public interface ISomeClass
-    {
-    }
 }";
 
             const string interfaceDefinition = @"namespace RefactorTest
@@ -75,7 +68,7 @@ namespace RefactorTest
                 .WithSource(testFile)
                 .WithExpectedDiagnostics(diagnostic)
                 .WithFixed(withFix)
-                //.WithFixed(interfaceDefinition, "ISomeClass.cs")
+                .WithFixed(interfaceDefinition, "ISomeClass.cs")
                 .WithExpectedDiagnosticsAfter(refactorDiagnostic, addMemberDiagnostic);
             await test.RunAsync();
         }

@@ -218,15 +218,13 @@ namespace Microsoft.DotNet.UpgradeAssistant.Extensions.Default.Analyzers
             {
                 if (context.Operation.Syntax is CodeAnalysis.CSharp.Syntax.AttributeSyntax)
                 {
-                   if (context.Operation.Children.Count() == 1 &&
-                    context.Operation.Children.First() is ITypeOfOperation typeOf &&
-                    typeOf.TypeOperand is ITypeSymbol typeToReplace)
-                   {
-                       var definition = new AdapterDefinition(typeToReplace);
-                       context.ReportDiagnostic(
-                           Diagnostic.Create(DefinitionRule, context.Operation.Syntax.GetLocation(), properties: definition.Properties, definition.TypeToReplace)
-                       );
-                   }
+                    if (context.Operation.Children.Count() == 1 &&
+                     context.Operation.Children.First() is ITypeOfOperation typeOf &&
+                     typeOf.TypeOperand is ITypeSymbol typeToReplace)
+                    {
+                        var definition = new AdapterDefinition(typeToReplace);
+                        context.ReportDiagnostic(Diagnostic.Create(DefinitionRule, context.Operation.Syntax.GetLocation(), properties: definition.Properties, definition.TypeToReplace));
+                    }
                 }
             }, OperationKind.None);
         }

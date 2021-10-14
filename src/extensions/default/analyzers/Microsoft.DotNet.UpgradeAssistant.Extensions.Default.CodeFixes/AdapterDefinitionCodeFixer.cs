@@ -4,12 +4,9 @@
 using System.Collections.Immutable;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CodeActions;
 using Microsoft.CodeAnalysis.CodeFixes;
 using Microsoft.CodeAnalysis.Editing;
-using Microsoft.CodeAnalysis.Formatting;
-using System.Linq;
 using Microsoft.DotNet.UpgradeAssistant.Extensions.Default.Analyzers;
 
 namespace Microsoft.DotNet.UpgradeAssistant.Extensions.Default.CodeFixes
@@ -22,13 +19,14 @@ namespace Microsoft.DotNet.UpgradeAssistant.Extensions.Default.CodeFixes
         public sealed override FixAllProvider GetFixAllProvider()
         {
             // See https://github.com/dotnet/roslyn/blob/master/docs/analyzers/FixAllProvider.md for more information on Fix All Providers
-            return WellKnownFixAllProviders.BatchFixer;
+            // Multiple documents don't seem to merge well
+            return null!;
         }
 
         public sealed override async Task RegisterCodeFixesAsync(CodeFixContext context)
         {
             var diagnostic = context.Diagnostics[0];
-            var semantic = await context.Document.GetSemanticModelAsync();
+            var semantic = await context.Document.GetSemanticModelAsync().ConfigureAwait(false);
 
             if (semantic is null)
             {
@@ -48,8 +46,6 @@ namespace Microsoft.DotNet.UpgradeAssistant.Extensions.Default.CodeFixes
             {
                 return;
             }
-
-            var adapterContext = AdapterContext.Create().FromCompilation(semantic.Compilation);
 
             if (diagnostic.Properties.TryGetTypeToReplace(semantic, out var typeToReplace))
             {
@@ -71,19 +67,17 @@ namespace Microsoft.DotNet.UpgradeAssistant.Extensions.Default.CodeFixes
                             var newNode = editor.Generator.InsertAttributeArguments(node, 0, new[] { newArg });
                             editor.ReplaceNode(node, newNode);
 
+                            var project = editor.GetChangedDocument().Project;
+
                             var interfaceDeclaration = editor.Generator.InterfaceDeclaration(interfaceName, accessibility: Accessibility.Public);
                             var namespaceDeclaration = editor.Generator.NamespaceDeclaration(
                                 editor.Generator.NameExpression(typeToReplace.ContainingNamespace),
                                 interfaceDeclaration);
-                            editor.AddMember(root, namespaceDeclaration);
-
-                            return editor.GetChangedDocument().Project.Solution;
 
                             // Add the interface declaration to the abstractions project
+                            var addedDocument = project.AddDocument($"{interfaceName}.cs", editor.Generator.CompilationUnit(namespaceDeclaration));
 
-                            //var addedDocument = project.AddDocument("{interfaceName}.cs", editor.Generator.CompilationUnit(namespaceDeclaration));
-
-                            //return addedDocument.Project.Solution;
+                            return addedDocument.Project.Solution;
                         },
                         nameof(AdapterDefinitionCodeFixer)),
                     diagnostic);
