@@ -18,7 +18,7 @@ namespace Microsoft.DotNet.UpgradeAssistant.Extensions.Default.Analyzers
         public const string ConstructorCountDiagnosticId = "UA0014e";
         public const string ParameterDiagnosticId = "UA0014f";
         public const string ParameterCountDiagnosticId = "UA0014g";
-        public const string AddAdapterDescriptorDiagnosticId = "UA0014h";
+        public const string AddAdapterDescriptorDiagnosticId = "UA0014l";
 
         private const string Category = "Refactor";
 
