@@ -58,6 +58,17 @@ namespace Microsoft.DotNet.UpgradeAssistant.Extensions.Default.Analyzers.Test
             return test;
         }
 
+        public static TTest WithAdditionalFilesAfter<TTest>(this TTest test, params (string FileName, string Content)[] additionalFiles)
+            where TTest : ICodeFixTest
+        {
+            foreach (var file in additionalFiles)
+            {
+                test.FixedState.AdditionalFiles.Add(file);
+            }
+
+            return test;
+        }
+
         public static TTest With<TTest>(this TTest test, CodeActionValidationMode mode)
             where TTest : ICodeFixTest
         {
