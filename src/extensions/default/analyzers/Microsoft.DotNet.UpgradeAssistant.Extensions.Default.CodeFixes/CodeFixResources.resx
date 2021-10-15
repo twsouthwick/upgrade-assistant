@@ -180,5 +180,7 @@
   </data>
   <data name="AddAdapterDescriptorTitle" xml:space="preserve">
     <value>Add an adapter descriptor class</value>
+  <data name="AdapterStaticMemberTitle" xml:space="preserve">
+    <value>Redirect static member access to alternate member</value>
   </data>
 </root>

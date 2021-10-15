@@ -8,7 +8,7 @@ using Microsoft.CodeAnalysis;
 
 namespace Microsoft.DotNet.UpgradeAssistant.Extensions.Default.Analyzers
 {
-    public record AdapterDescriptor<TSymbol>(TSymbol Destination, TSymbol Original)
+    public record AdapterDescriptor<TSymbol>(TSymbol Original, TSymbol Destination)
         where TSymbol : ISymbol
     {
         private string? _originalMessage;
@@ -48,7 +48,7 @@ namespace Microsoft.DotNet.UpgradeAssistant.Extensions.Default.Analyzers
                 if (_properties is null)
                 {
                     Interlocked.Exchange(ref _properties, ImmutableDictionary.Create<string, string?>()
-                        .WithMissingType(Destination));
+                        .WithSymbol(Destination));
                 }
 
                 return _properties!;

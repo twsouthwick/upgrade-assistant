@@ -104,6 +104,15 @@ namespace Microsoft.DotNet.UpgradeAssistant.Extensions.Default.CodeFixes {
                 return ResourceManager.GetString("AddAdapterDescriptorTitle", resourceCulture);
             }
         }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Redirect static member access to alternate member.
+        /// </summary>
+        internal static string AdapterStaticMemberTitle {
+            get {
+                return ResourceManager.GetString("AdapterStaticMemberTitle", resourceCulture);
+            }
+        }
         
         /// <summary>
         ///   Looks up a localized string similar to Replace with Microsoft.AspNetCore.Mvc.Controller.
