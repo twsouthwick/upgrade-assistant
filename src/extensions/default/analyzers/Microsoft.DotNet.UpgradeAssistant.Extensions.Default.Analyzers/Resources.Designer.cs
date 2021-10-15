@@ -331,7 +331,7 @@ namespace Microsoft.DotNet.UpgradeAssistant.Extensions.Default.Analyzers {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to This type is not supported on .NET Core/.NET 5+ and should be replaced with a modern equivalent..
+        ///   Looks up a localized string similar to This type is not supported on .NET Core/.NET 5+ and should be replaced with a modern equivalent.
         /// </summary>
         internal static string ApiAlertGenericDescription {
             get {
@@ -345,6 +345,33 @@ namespace Microsoft.DotNet.UpgradeAssistant.Extensions.Default.Analyzers {
         internal static string ApiAlertGenericMessageFormat {
             get {
                 return ResourceManager.GetString("ApiAlertGenericMessageFormat", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Add an adapter descriptor class.
+        /// </summary>
+        internal static string AddAdapterDescriptorTitle {
+            get {
+                return ResourceManager.GetString("AddAdapterDescriptorTitle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Create an adapter descriptor class to facilitate migrations away from this deprecated type.
+        /// </summary>
+        internal static string AddAdapterDescriptorDescription {
+            get {
+                return ResourceManager.GetString("AddAdapterDescriptorDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   An adapter descriptor class with assembly attribute '{0}' will be created.
+        /// </summary>
+        internal static string AddAdapterDescriptorMessageFormat {
+            get {
+                return ResourceManager.GetString("AddAdapterDescriptorMessageFormat", resourceCulture);
             }
         }
         
@@ -664,7 +691,7 @@ namespace Microsoft.DotNet.UpgradeAssistant.Extensions.Default.Analyzers {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to System.Deployment is not supported on .NET Core..
+        ///   Looks up a localized string similar to System.Deployment is not supported on .NET Core.
         /// </summary>
         internal static string UsingSystemDeploymentDescription {
             get {

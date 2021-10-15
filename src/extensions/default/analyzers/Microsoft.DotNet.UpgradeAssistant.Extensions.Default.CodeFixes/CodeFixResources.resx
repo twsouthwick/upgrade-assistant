@@ -178,4 +178,7 @@
   <data name="AdapterDefinitionTitle" xml:space="preserve">
     <value>Create abstraction for definition</value>
   </data>
+  <data name="AddAdapterDescriptorTitle" xml:space="preserve">
+    <value>Add an adapter descriptor class</value>
+  </data>
 </root>
