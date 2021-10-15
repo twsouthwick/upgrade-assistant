@@ -48,7 +48,7 @@ namespace Microsoft.DotNet.UpgradeAssistant.Extensions.Default.CodeFixes
                         var contents = await sr.ReadToEndAsync().ConfigureAwait(false);
                         contents = contents.Replace("/*{{DEPRECATED_TYPE}}*/", node.ToFullString().Trim());
 
-                        var adapterDescriptorAttributeClass = project.AddDocument("AdapterDescriptorAttribute.cs", contents);
+                        var adapterDescriptorAttributeClass = project.AddDocument("AdapterDescriptor.cs", contents);
                         project = adapterDescriptorAttributeClass.Project;
                         var slnEditor = new SolutionEditor(project.Solution);
 

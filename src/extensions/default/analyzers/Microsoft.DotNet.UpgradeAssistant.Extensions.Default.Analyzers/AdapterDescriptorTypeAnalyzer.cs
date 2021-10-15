@@ -81,7 +81,7 @@ namespace Microsoft.DotNet.UpgradeAssistant.Extensions.Default.Analyzers
             {
                 var adapterContext = AdapterContext.Create().FromCompilation(context.Compilation);
 
-                if (!adapterContext.IsAvailable)
+                if (adapterContext.Types.AdapterDescriptor is null)
                 {
                     RegisterAddAdapterDescriptorActions(context);
                     return;
@@ -111,11 +111,11 @@ namespace Microsoft.DotNet.UpgradeAssistant.Extensions.Default.Analyzers
 
             ValidateAttribute(context, type);
 
-            if (type.InstanceConstructors.Length > 1)
+            if (type.InstanceConstructors.Length > 2)
             {
                 foreach (var location in type.Locations)
                 {
-                    context.ReportDiagnostic(Diagnostic.Create(ConstructorCountRule, location, type.ToDisplayString(), 1));
+                    context.ReportDiagnostic(Diagnostic.Create(ConstructorCountRule, location, type.ToDisplayString(), 2));
                 }
             }
 
