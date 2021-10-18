@@ -22,7 +22,8 @@ namespace Microsoft.DotNet.UpgradeAssistant.Extensions.Default.CodeFixes
         public sealed override FixAllProvider GetFixAllProvider()
         {
             // See https://github.com/dotnet/roslyn/blob/master/docs/analyzers/FixAllProvider.md for more information on Fix All Providers
-            return WellKnownFixAllProviders.BatchFixer;
+            // Multiple documents don't seem to merge well
+            return null!;
         }
 
         public sealed override async Task RegisterCodeFixesAsync(CodeFixContext context)

@@ -1,10 +1,7 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Collections.Generic;
 using System.Threading.Tasks;
-using Microsoft.CodeAnalysis.CSharp.Testing;
-using Microsoft.CodeAnalysis.Testing.Verifiers;
 using Xunit;
 
 using VerifyCS = Microsoft.DotNet.UpgradeAssistant.Extensions.Default.Analyzers.Test.CSharpCodeFixVerifier<
@@ -65,7 +62,7 @@ namespace Microsoft.CodeAnalysis.Refactoring
         }
 
         [Fact]
-        public async Task SingleChange_Field()
+        public async Task SingleChangeField()
         {
             var testFile = @"
 using System.Web;
@@ -83,15 +80,13 @@ namespace RefactorTest
                 .WithSource(testFile)
                 .WithExpectedDiagnostics(addAttributeDescriptorClassDiagnostic)
                 .WithFixed(testFile)
-                .With(CodeAnalysis.Testing.CodeFixTestBehaviors.FixOne)
-                .WithAdditionalFilesAfter(("AdapterDescriptor.cs", HttpContextAttributeDescriptorClass))
-                .WithExpectedDiagnosticsAfter(new CodeAnalysis.Testing.DiagnosticResult(AdapterDefinitionAnalyzer.DefinitionDiagnosticId, CodeAnalysis.DiagnosticSeverity.Warning).WithLocation(0).WithArguments("System.Web.HttpContext"))
+                .WithFixed(HttpContextAttributeDescriptorClass, "AdapterDescriptor.cs")
                 .WithSystemWeb()
                 .RunAsync();
         }
 
         [Fact]
-        public async Task SingleChange_MethodParameter()
+        public async Task SingleChangeMethodParameter()
         {
             var testFile = @"
 using System.Web;
@@ -112,8 +107,7 @@ namespace RefactorTest
                 .WithSource(testFile)
                 .WithExpectedDiagnostics(addAttributeDescriptorClassDiagnostic)
                 .WithFixed(testFile)
-                .WithAdditionalFilesAfter(("AdapterDescriptor.cs", HttpContextAttributeDescriptorClass))
-                .WithExpectedDiagnosticsAfter(new CodeAnalysis.Testing.DiagnosticResult(AdapterDefinitionAnalyzer.DefinitionDiagnosticId, CodeAnalysis.DiagnosticSeverity.Warning).WithLocation(0).WithArguments("System.Web.HttpContext"))
+                .WithFixed(HttpContextAttributeDescriptorClass, "AdapterDescriptor.cs")
                 .WithSystemWeb()
                 .RunAsync();
         }
