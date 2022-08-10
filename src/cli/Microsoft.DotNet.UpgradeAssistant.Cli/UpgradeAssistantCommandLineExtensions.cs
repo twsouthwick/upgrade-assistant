@@ -17,35 +17,10 @@ using Serilog.Formatting.Compact;
 
 namespace Microsoft.DotNet.UpgradeAssistant.Cli
 {
-    public static class UpgradeAssistantHostExtensions
+    public static class UpgradeAssistantCommandLineExtensions
     {
-        public static void AddNonInteractive(this IServiceCollection services, Action<NonInteractiveOptions> configure, bool isNonInteractive)
-        {
-            if (isNonInteractive)
-            {
-                services.AddTransient<IUserInput, NonInteractiveUserInput>();
-                services
-                    .AddOptions<NonInteractiveOptions>()
-                    .Configure(configure);
-            }
-        }
-
-        public static void AddKnownExtensionOptions(this IServiceCollection services, KnownExtensionOptionsBuilder options)
-        {
-            if (options is null)
-            {
-                throw new ArgumentNullException(nameof(options));
-            }
-
-            services.AddExtensionOption(new
-            {
-                Backup = new { Skip = options.SkipBackup },
-                Solution = new { Entrypoints = options.Entrypoints }
-            });
-        }
-
         public static IHostBuilder UseUpgradeAssistant<TApp>(this IHostBuilder host, IUpgradeAssistantOptions upgradeOptions)
-            where TApp : class, IAppCommand
+                where TApp : class, IAppCommand
         {
             if (host is null)
             {
