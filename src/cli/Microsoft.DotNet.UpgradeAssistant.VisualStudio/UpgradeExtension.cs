@@ -17,7 +17,11 @@ internal class UpgradeExtension : HostedExtension<UpgradeExtension>
         {
             services.AddSingleton<ITelemetry, EmptyTelemetry>();
             services.AddUpgradeServices(ctx.Configuration, new VisualStudioOptions());
+            services.AddSingleton<ExtensionAwareHost>();
         });
+
+    protected override IHost BuildHost(IHostBuilder builder) 
+        => base.BuildHost(builder).Services.GetRequiredService<ExtensionAwareHost>();
 
     protected override ResourceManager? ResourceManager => LocalizedStrings.ResourceManager;
 }
