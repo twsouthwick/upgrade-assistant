@@ -32,8 +32,6 @@ namespace Microsoft.DotNet.UpgradeAssistant.Cli
                 .UseServiceProviderFactory(new AutofacServiceProviderFactory())
                 .ConfigureServices((context, services) =>
                 {
-                    services.AddHttpClient();
-
                     // Register this first so the first startup step is to check for telemetry opt-out
                     services.AddTransient<IUpgradeStartup, ConsoleFirstTimeUserNotifier>();
                     services.AddTelemetry(options =>
@@ -42,31 +40,19 @@ namespace Microsoft.DotNet.UpgradeAssistant.Cli
                         options.ProductVersion = UpgradeVersion.Current.FullVersion;
                     });
 
+                    services.AddUpgradeServices(context.Configuration, upgradeOptions);
+
                     services.AddHostedService<ConsoleRunner>();
-                    services.AddStepManagement();
-                    services.AddExtensions()
-                        .AddDefaultExtensions(context.Configuration)
-                        .AddFromEnvironmentVariables(context.Configuration);
 
                     services.TryAddTransient<IUserInput, ConsoleCollectUserInput>();
 
-                    services.AddAnalysis(options =>
-                    {
-                        options.Format = upgradeOptions.Format ?? context.Configuration["Analysis:DefaultFormat"];
-                    });
-
                     services.AddSingleton(new InputOutputStreams(Console.In, Console.Out));
-                    services.AddSingleton<CommandProvider>();
-                    services.TryAddSingleton(new LogSettings(true));
 
                     services.AddSingleton<IProcessRunner, ProcessRunner>();
                     services.AddSingleton<ErrorCodeAccessor>();
 
-                    services.AddTargetFrameworkSelectors(options =>
-                    {
-                        context.Configuration.GetSection("DefaultTargetFrameworks").Bind(options);
-                        options.TargetTfmSupport = upgradeOptions.TargetTfmSupport;
-                    });
+                    services.AddSingleton<CommandProvider>();
+                    services.TryAddSingleton(new LogSettings(true));
 
                     services.AddScoped<IAppCommand, TApp>();
                 })
