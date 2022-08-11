@@ -23,6 +23,14 @@
     <PackageReference Update="Microsoft.Build.Framework" ExcludeAssets="runtime" />
   </ItemGroup>
 
+  <Target Name="Roslyn51768Workaround" BeforeTargets="BeforeBuild">
+       <CreateProperty Value="$(IntermediateOutputPath)$(MSBuildProjectName).d$(DesignTimeBuild)-b$(BuildingProject).GeneratedMSBuildEditorConfig.editorconfig">
+            <Output
+                TaskParameter="Value"
+                PropertyName="GeneratedMSBuildEditorConfigFile" />
+        </CreateProperty>
+  </Target>
+
   <ItemGroup Condition="$(ValidateLayerDiagram)">
     <AdditionalFiles Include="$(MSBuildThisFileDirectory)eng\DependencyValidation\UpgradeAssistant.layerdiagram" Link="UpgradeAssistant.layerdiagram">
       <Visible>False</Visible>
