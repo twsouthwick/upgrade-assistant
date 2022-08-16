@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
+using System.Runtime.Loader;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Logging;
@@ -19,6 +20,7 @@ namespace Microsoft.DotNet.UpgradeAssistant.Extensions
         private readonly IUpgradeAssistantConfigurationLoader _configurationLoader;
         private readonly IEnumerable<IExtensionLoader> _loaders;
         private readonly ILogger<ExtensionProvider> _logger;
+        private readonly IOptions<ExtensionOptions> _options;
         private readonly ExtensionInstanceFactory _factory;
 
         public ExtensionProvider(
@@ -34,15 +36,11 @@ namespace Microsoft.DotNet.UpgradeAssistant.Extensions
                 throw new ArgumentNullException(nameof(extensionLocator));
             }
 
-            if (options is null)
-            {
-                throw new ArgumentNullException(nameof(options));
-            }
-
             _factory = factory ?? throw new ArgumentNullException(nameof(factory));
             _loaders = loaders ?? throw new ArgumentNullException(nameof(loaders));
             _configurationLoader = configurationLoader ?? throw new ArgumentNullException(nameof(configurationLoader));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+            _options = options ?? throw new ArgumentNullException(nameof(options));
 
             _extensions = new Lazy<IEnumerable<ExtensionInstance>>(() =>
             {
@@ -152,7 +150,10 @@ namespace Microsoft.DotNet.UpgradeAssistant.Extensions
 
         public IExtensionInstance? OpenExtension(string path)
         {
-            path = Path.GetFullPath(path);
+            if (!Path.IsPathRooted(path))
+            {
+                path = Path.GetFullPath(path, _options.Value.RootPath);
+            }
 
             foreach (var loader in _loaders)
             {

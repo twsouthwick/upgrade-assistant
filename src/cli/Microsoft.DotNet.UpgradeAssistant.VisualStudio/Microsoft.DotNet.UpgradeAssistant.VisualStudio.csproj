@@ -1,53 +1,62 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
-  <PropertyGroup>
-    <TargetFramework>net6.0-windows</TargetFramework>
-    <ImplicitUsings>enable</ImplicitUsings>
-      <LangVersion>10.0</LangVersion>
-    <Nullable>enable</Nullable>
-    <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
-      <IsExtensionHost>true</IsExtensionHost>
+    <PropertyGroup>
+        <TargetFramework>net6.0-windows</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <LangVersion>10.0</LangVersion>
+        <Nullable>enable</Nullable>
+        <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
 
-    <!-- The VisualStudio.Extensibility preview packages are available from the azure-public/vside/vssdk feed -->
-    <RestoreAdditionalProjectSources>https://pkgs.dev.azure.com/azure-public/vside/_packaging/vssdk/nuget/v3/index.json;$(RestoreAdditionalProjectSources)</RestoreAdditionalProjectSources>
-  </PropertyGroup>
+        <!--<WriteDeployFilesDependsOnTargets>AddContentFilesForDeploy;$(WriteDeployFilesDependsOnTargets)</WriteDeployFilesDependsOnTargets>-->
 
-  <ItemGroup>
-    <None Remove="appsettings.Development.json" />
-    <None Remove="appsettings.json" />
-  </ItemGroup>
+        <!-- The VisualStudio.Extensibility preview packages are available from the azure-public/vside/vssdk feed -->
+        <RestoreAdditionalProjectSources>https://pkgs.dev.azure.com/azure-public/vside/_packaging/vssdk/nuget/v3/index.json;$(RestoreAdditionalProjectSources)</RestoreAdditionalProjectSources>
+    </PropertyGroup>
 
-  <ItemGroup>
-    <Content Include="appsettings.Development.json">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="appsettings.json">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-  </ItemGroup>
+    <ItemGroup>
+        <None Remove="appsettings.Development.json" />
+        <None Remove="appsettings.json" />
+    </ItemGroup>
 
-  <ItemGroup>
-    <PackageReference Include="Microsoft.VisualStudio.Extensibility.Sdk" Version="17.4.19-preview-1" />
-    <PackageReference Include="Microsoft.VisualStudio.Extensibility.Build" Version="17.4.19-preview-1" />
-  </ItemGroup>
+    <ItemGroup>
+        <Content Include="appsettings.Development.json">
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </Content>
+        <Content Include="appsettings.json">
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </Content>
+    </ItemGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="..\..\components\Microsoft.DotNet.UpgradeAssistant.Host\Microsoft.DotNet.UpgradeAssistant.Host.csproj" />
-  </ItemGroup>
+    <ItemGroup>
+        <PackageReference Include="Microsoft.VisualStudio.Extensibility.Sdk" Version="17.4.19-preview-1" />
+        <PackageReference Include="Microsoft.VisualStudio.Extensibility.Build" Version="17.4.19-preview-1" />
+    </ItemGroup>
 
-  <ItemGroup>
-    <Compile Update="LocalizedStrings.Designer.cs">
-      <DesignTime>True</DesignTime>
-      <AutoGen>True</AutoGen>
-      <DependentUpon>LocalizedStrings.resx</DependentUpon>
-    </Compile>
-  </ItemGroup>
+    <ItemGroup>
+        <ProjectReference Include="..\..\components\Microsoft.DotNet.UpgradeAssistant.Host\Microsoft.DotNet.UpgradeAssistant.Host.csproj" />
+    </ItemGroup>
 
-  <ItemGroup>
-    <EmbeddedResource Update="LocalizedStrings.resx">
-      <Generator>ResXFileCodeGenerator</Generator>
-      <LastGenOutput>LocalizedStrings.Designer.cs</LastGenOutput>
-    </EmbeddedResource>
-  </ItemGroup>
+    <ItemGroup>
+        <Compile Update="LocalizedStrings.Designer.cs">
+            <DesignTime>True</DesignTime>
+            <AutoGen>True</AutoGen>
+            <DependentUpon>LocalizedStrings.resx</DependentUpon>
+        </Compile>
+    </ItemGroup>
 
+    <ItemGroup>
+        <EmbeddedResource Update="LocalizedStrings.resx">
+            <Generator>ResXFileCodeGenerator</Generator>
+            <LastGenOutput>LocalizedStrings.Designer.cs</LastGenOutput>
+        </EmbeddedResource>
+    </ItemGroup>
+
+    <Target Name="AddContentFilesForDeploy" BeforeTargets="AssignTargetPaths">
+        <MSBuild Projects="@(ProjectReference)" Targets="ContentFilesProjectOutputGroup" BuildInParallel="$(BuildInParallel)">
+            <Output TaskParameter="TargetOutputs" ItemName="_ContentFromProjects" />
+        </MSBuild>
+        <ItemGroup>
+            <Content Include="@(_ContentFromProjects)" />
+        </ItemGroup>
+    </Target>
 </Project>

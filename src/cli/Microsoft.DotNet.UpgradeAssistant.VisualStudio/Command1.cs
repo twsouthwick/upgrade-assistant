@@ -9,7 +9,7 @@ using Microsoft.VisualStudio.Extensibility.Definitions;
 namespace Microsoft.DotNet.UpgradeAssistant.VisualStudio;
 
 [CommandIcon(KnownMonikers.Extension, IconSettings.IconAndText)]
-[Command("Microsoft.DotNet.UpgradeAssistant.VisualStudio.Command1", "Sample Remote Command", placement: CommandPlacement.ToolsMenu)]
+[Command("Microsoft.DotNet.UpgradeAssistant.VisualStudio.Command1", "Sample Remote Command", placement: CommandPlacement.proj)]
 internal class Command1 : Command
 {
     private TraceSource traceSource;

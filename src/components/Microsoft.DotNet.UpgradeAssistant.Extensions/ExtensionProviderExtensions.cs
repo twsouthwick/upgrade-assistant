@@ -97,7 +97,7 @@ namespace Microsoft.DotNet.UpgradeAssistant.Extensions
                 static void AddExtensions(ICollection<string> collection, string[] names)
                 {
                     var extensionFullPaths = names
-                        .Select(n => Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, ExtensionDirectory, n)));
+                        .Select(n => Path.Combine(ExtensionDirectory, n));
 
                     foreach (var path in extensionFullPaths)
                     {

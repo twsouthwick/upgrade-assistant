@@ -18,6 +18,7 @@ namespace Microsoft.DotNet.UpgradeAssistant.Extensions
 
         private readonly ExtensionInstance _extension;
         private readonly ILogger _logger;
+        private readonly AssemblyLoadContext _defaultAlc;
 
         public ExtensionAssemblyLoadContext(string instanceKey, ExtensionInstance extension, string[] assemblies, ILogger logger)
             : base(string.Concat(ALC_Prefix, extension.Name, instanceKey), isCollectible: true)
@@ -33,6 +34,8 @@ namespace Microsoft.DotNet.UpgradeAssistant.Extensions
             Unloading += _ => _logger.LogDebug("{Name} extension is unloading", Name);
 
             Load(extension, assemblies);
+
+            _defaultAlc = AssemblyLoadContext.GetLoadContext(typeof(IUpgradeContext).Assembly) ?? throw new InvalidOperationException("Abstractions library must be loaded");
         }
 
         private void Load(ExtensionInstance extension, string[] assemblies)
@@ -64,18 +67,20 @@ namespace Microsoft.DotNet.UpgradeAssistant.Extensions
 
         protected override Assembly? Load(AssemblyName assemblyName)
         {
-            if (assemblyName.Name is null)
-            {
-                return null;
-            }
-
             // Don't load Microsoft.DotNet.UpgradeAssistant.Abstractions in extensions' load contexts;
             // That assembly should come from the default ALC so that it's shared between extensions.
-            if (assemblyName.Name.Equals(UpgradeAssistantAbstractionsAssemblyName, StringComparison.Ordinal))
+            var isAbstraction = string.Equals(assemblyName.Name, UpgradeAssistantAbstractionsAssemblyName, StringComparison.Ordinal); ;
+
+            if (!isAbstraction && LoadFromExtension(assemblyName) is { } assembly)
             {
-                return null;
+                return assembly;
             }
 
+            return _defaultAlc.LoadFromAssemblyName(assemblyName);
+        }
+
+        private Assembly? LoadFromExtension(AssemblyName assemblyName)
+        {
             var dll = $"{assemblyName.Name}.dll";
             var dllFile = _extension.FileProvider.GetFileInfo(dll);
 

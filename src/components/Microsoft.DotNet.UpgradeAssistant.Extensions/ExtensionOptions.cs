@@ -10,6 +10,8 @@ namespace Microsoft.DotNet.UpgradeAssistant.Extensions
 {
     public class ExtensionOptions
     {
+        public string RootPath { get; set; } = AppContext.BaseDirectory;
+
         public string DefaultSource { get; set; } = string.Empty;
 
         public ICollection<string> DefaultExtensions { get; } = new List<string>();

@@ -3,6 +3,7 @@
 
 using System.Resources;
 using Autofac.Extensions.DependencyInjection;
+using Microsoft.DotNet.UpgradeAssistant.Extensions;
 using Microsoft.DotNet.UpgradeAssistant.Telemetry;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -18,9 +19,14 @@ internal class UpgradeExtension : HostedExtension<UpgradeExtension>
             services.AddSingleton<ITelemetry, EmptyTelemetry>();
             services.AddUpgradeServices(ctx.Configuration, new VisualStudioOptions());
             services.AddSingleton<ExtensionAwareHost>();
+            services.AddOptions<ExtensionOptions>()
+                .Configure(options =>
+                {
+                    options.RootPath = ctx.Configuration[HostDefaults.ContentRootKey];
+                });
         });
 
-    protected override IHost BuildHost(IHostBuilder builder) 
+    protected override IHost BuildHost(IHostBuilder builder)
         => base.BuildHost(builder).Services.GetRequiredService<ExtensionAwareHost>();
 
     protected override ResourceManager? ResourceManager => LocalizedStrings.ResourceManager;
