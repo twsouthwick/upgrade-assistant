@@ -53,7 +53,6 @@ namespace Microsoft.DotNet.UpgradeAssistant.MSBuild
 
         public MSBuildWorkspaceUpgradeContext(
             IOptions<WorkspaceOptions> options,
-            Factories factories,
             Func<MSBuildWorkspaceUpgradeContext, FileInfo, MSBuildProject> projectFactory,
             ILogger<MSBuildWorkspaceUpgradeContext> logger)
         {
@@ -64,9 +63,16 @@ namespace Microsoft.DotNet.UpgradeAssistant.MSBuild
             _projectCache = new Dictionary<string, IProject>(StringComparer.OrdinalIgnoreCase);
 
             Properties = new UpgradeContextProperties();
-            SolutionInfo = factories.CreateSolutionInfo(InputPath);
+            SolutionInfo = new NoInfo();// factories().CreateSolutionInfo(InputPath);
             GlobalProperties = CreateProperties(options.Value);
             ProjectCollection = new ProjectCollection(globalProperties: GlobalProperties);
+        }
+
+        private class NoInfo : ISolutionInfo
+        {
+            public string SolutionId { get; } = Guid.NewGuid().ToString();
+
+            public string GetProjectId(string project) => project;
         }
 
         public ProjectCollection ProjectCollection { get; }

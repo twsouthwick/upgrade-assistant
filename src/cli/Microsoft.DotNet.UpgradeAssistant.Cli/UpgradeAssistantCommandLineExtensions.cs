@@ -48,7 +48,6 @@ namespace Microsoft.DotNet.UpgradeAssistant.Cli
 
                     services.AddSingleton(new InputOutputStreams(Console.In, Console.Out));
 
-                    services.AddSingleton<IProcessRunner, ProcessRunner>();
                     services.AddSingleton<ErrorCodeAccessor>();
 
                     services.AddSingleton<CommandProvider>();

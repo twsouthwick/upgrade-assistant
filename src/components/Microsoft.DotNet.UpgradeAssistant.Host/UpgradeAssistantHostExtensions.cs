@@ -30,6 +30,8 @@ namespace Microsoft.DotNet.UpgradeAssistant
                 configuration.GetSection("DefaultTargetFrameworks").Bind(options);
                 options.TargetTfmSupport = options.TargetTfmSupport;
             });
+
+            services.AddSingleton<IProcessRunner, ProcessRunner>();
         }
 
         public static void AddNonInteractive(this IServiceCollection services, Action<NonInteractiveOptions> configure, bool isNonInteractive)

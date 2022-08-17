@@ -10,7 +10,7 @@ using Microsoft.DotNet.UpgradeAssistant.Telemetry;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.DotNet.UpgradeAssistant.Cli
-{
+{ 
     public class ConsoleUpgrade : IAppCommand
     {
         private readonly IUserInput _input;

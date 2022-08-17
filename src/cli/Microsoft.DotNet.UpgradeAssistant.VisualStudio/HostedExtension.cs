@@ -5,10 +5,11 @@ using System.Reflection;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.VisualStudio.Extensibility;
+using Microsoft.VisualStudio.Extensibility.Commands;
 
 namespace Microsoft.DotNet.UpgradeAssistant.VisualStudio;
 
-internal abstract class HostedExtension<T> : Extension
+public abstract class HostedExtension<T> : Extension
 {
     private const string FieldName = "factoryServiceProvider";
     private readonly Lazy<IHost> _host;
@@ -26,6 +27,12 @@ internal abstract class HostedExtension<T> : Extension
 
         var factoryServiceProvider = new Lazy<IServiceProvider>(() => _host.Value.Services);
         field.SetValue(this, factoryServiceProvider);
+    }
+
+    public override async Task InitializeCommandsAsync(CommandSetBase commandSet)
+    {
+        await _host.Value.StartAsync(default);
+        await base.InitializeCommandsAsync(commandSet);
     }
 
     private IHost SetupHost()
